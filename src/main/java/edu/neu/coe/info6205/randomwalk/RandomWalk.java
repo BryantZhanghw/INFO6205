@@ -4,6 +4,8 @@
 
 package edu.neu.coe.info6205.randomwalk;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 
 public class RandomWalk {
@@ -80,9 +82,15 @@ public class RandomWalk {
         if (args.length == 0) {
             int[] stepsArray = {100, 200, 500, 1000, 5000, 10000};
             int n = 10;
-            for (int m : stepsArray) {
-                double meanDistance = randomWalkMulti(m, n);
-                System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
+            try (FileWriter writer = new FileWriter("random_walk_results.csv")) {
+                writer.write("Steps,Mean Distance\n");
+                for (int m : stepsArray) {
+                    double meanDistance = randomWalkMulti(m, n);
+                    writer.write(m + "," + meanDistance + "\n");
+                    System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else {
             int m = Integer.parseInt(args[0]);
