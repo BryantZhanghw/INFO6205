@@ -92,6 +92,12 @@
             <version>7.10.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
         <!--        <dependency>
                     <groupId>edu.neu.coe.mgen</groupId>
                     <artifactId>INFO6205</artifactId>

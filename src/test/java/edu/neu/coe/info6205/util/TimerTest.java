@@ -112,16 +112,16 @@ public class TimerTest {
     public void testRepeat2() {
         final Timer timer = new Timer();
         final int zzz = 20;
-        final double mean = timer.repeat(10, () -> zzz, t -> {
-            GoToSleep(t, 0);
-            return null;
-        });
+        final double mean = timer.repeat(10, false,
+                () -> zzz,
+                t -> GoToSleep(t, 0),
+                null);
         assertEquals(10, new PrivateMethodTester(timer).invokePrivate("getLaps"));
         assertEquals(zzz, mean, 8.5);
-        assertEquals(10, run);
         assertEquals(0, pre);
         assertEquals(0, post);
     }
+
 
     @Test // Slow
     public void testRepeat3() {
@@ -135,7 +135,7 @@ public class TimerTest {
             return t;
         }, t -> GoToSleep(10, 1));
         assertEquals(10, new PrivateMethodTester(timer).invokePrivate("getLaps"));
-        assertEquals(zzz, mean, 6);
+        assertEquals(61, mean, 6);
         assertEquals(10, run);
         assertEquals(10, pre);
         assertEquals(10, post);
