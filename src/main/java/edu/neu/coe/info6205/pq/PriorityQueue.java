@@ -22,6 +22,10 @@ import java.util.function.Consumer;
  * @param <K>
  */
 public class PriorityQueue<K> implements Iterable<K> {
+    // PriorityQueue 类中的字段定义部分
+    private K highestPrioritySpill = null;  // 用于记录最高优先级的溢出元素
+
+
 
     /**
      * Basic constructor that takes the max value, an actual array of elements, and a comparator.
@@ -117,7 +121,28 @@ public class PriorityQueue<K> implements Iterable<K> {
             last--; // if we are already at capacity, then we arbitrarily trash the least eligible element
         // (even if it's more eligible than key).
         binHeap[++last + first - 1] = key; // insert the key into the binary heap just after the last element
-        swimUp(last + first - 1); // reorder the binary heap
+        swimUp(last + first - 1);
+        if (last == binHeap.length - first) {
+            // 如果堆已满，获取堆顶元素，视为溢出元素
+            K spilled = binHeap[first];  // 获取堆顶元素（通常是最大或最小的元素）
+
+            // 将新的元素替换掉堆顶元素
+            binHeap[first] = key;  // 直接替换堆顶元素为新的元素
+            sink(first);  // 调整堆，保持堆的性质
+
+            // 比较溢出元素的优先级，并更新 highestPrioritySpill
+            if (highestPrioritySpill == null || comparator.compare(spilled, highestPrioritySpill) > 0) {
+                highestPrioritySpill = spilled;
+            }
+        } else {
+            binHeap[++last + first - 1] = key;  // 如果堆未满，直接插入新元素
+            swimUp(last + first - 1);  // 重新排序堆
+        }
+
+    }
+
+    public K getHighestPrioritySpill() {
+        return highestPrioritySpill;
     }
 
     /**
@@ -250,6 +275,194 @@ public class PriorityQueue<K> implements Iterable<K> {
 
     public static void main(String[] args) {
         doMain();
+    }
+
+    //3
+    public static class FourAryHeap<K> extends PriorityQueue<K> {
+        private static final int NUM_CHILDREN = 4;
+
+        public FourAryHeap(int capacity, boolean max, Comparator<K> comparator, boolean floyd) {
+            super(capacity, max, comparator, floyd);
+        }
+
+
+        protected int parent(int k) {
+            return (k + NUM_CHILDREN - 2) / NUM_CHILDREN;
+        }
+
+        protected int firstChild(int k) {
+            return NUM_CHILDREN * (k - 1) + 2;
+        }
+    }
+
+
+    //4
+    public static class FourAryHeapWithFloyd<K> extends FourAryHeap<K> {
+
+        public FourAryHeapWithFloyd(int capacity, boolean max, Comparator<K> comparator) {
+            super(capacity, max, comparator, true);
+        }
+    }
+
+    //5
+    public static class FibonacciHeap<K> {
+        private Node<K> min;
+        private int size;
+        private final Comparator<K> comparator;
+
+        public FibonacciHeap(Comparator<K> comparator) {
+            this.comparator = comparator;
+        }
+        public void insert(K key) {
+            Node<K> node = new Node<>(key);
+            if (min == null) {
+                min = node;
+            } else {
+                insertIntoRootList(node);
+                if (compare(min, node) > 0) {
+                    min = node;
+                }
+            }
+            size++;
+        }
+
+        private void consolidate() {
+            List<Node<K>> aux = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                aux.add(null);
+            }
+            Node<K> current = min;
+            int numRoots = 0;
+            if (current != null) {
+                numRoots++;
+                current = current.right;
+                while (current != min) {
+                    numRoots++;
+                    current = current.right;
+                }
+            }
+            while (numRoots > 0) {
+                int degree = current.degree;
+                Node<K> next = current.right;
+                while (aux.get(degree) != null) {
+                    Node<K> other = aux.get(degree);
+                    if (compare(current, other) > 0) {
+                        Node<K> temp = current;
+                        current = other;
+                        other = temp;
+                    }
+                    link(other, current);
+                    aux.set(degree, null);
+                    degree++;
+                }
+                aux.set(degree, current);
+                current = next;
+                numRoots--;
+            }
+            min = null;
+            for (Node<K> node : aux) {
+                if (node != null) {
+                    if (min == null) {
+                        min = node;
+                    } else {
+                        insertIntoRootList(node);
+                        if (compare(node, min) < 0) {
+                            min = node;
+                        }
+                    }
+                }
+            }
+        }
+        private void link(Node<K> child, Node<K> parent) {
+            removeNodeFromRootList(child);
+            child.parent = parent;
+            if (parent.child == null) {
+                parent.child = child;
+            } else {
+                child.right = parent.child;
+                child.left = parent.child.left;
+                parent.child.left.right = child;
+                parent.child.left = child;
+            }
+            parent.degree++;
+            child.mark = false;
+        }
+        private void removeNodeFromRootList(Node<K> node) {
+            if (node.right == node) {
+                min = null;
+            } else {
+                node.left.right = node.right;
+                node.right.left = node.left;
+                if (min == node) {
+                    min = node.right;
+                }
+            }
+        }
+        private void mergeChildrenIntoRootList(Node<K> node) {
+            if (node.child == null) return;
+
+            Node<K> child = node.child;
+            do {
+                Node<K> next = child.right;
+                child.left = child.right = child;
+                insertIntoRootList(child);
+                child.parent = null;
+                child = next;
+            } while (child != node.child);
+        }
+        private void insertIntoRootList(Node<K> node) {
+            if (min == null) {
+                min = node;
+                node.left = node;
+                node.right = node;
+            } else {
+                node.right = min;
+                node.left = min.left;
+                min.left.right = node;
+                min.left = node;
+            }
+        }
+        private int compare(Node<K> n1, Node<K> n2) {
+            return comparator.compare(n1.key, n2.key);
+        }
+
+        public boolean isEmpty() {
+            return min == null;
+        }
+
+        public static class Node<K> {
+            K key;
+            Node<K> parent, child, left, right;
+            int degree;
+            boolean mark;
+            public Node(K key) {
+                this.key = key;
+                this.left = this;
+                this.right = this;
+            }
+        }
+        public K extractMin() {
+            if (min == null) {
+                throw new IllegalStateException("Heap is empty, cannot extract minimum.");
+            }
+
+            Node<K> oldMin = min;
+            if (min != null) {
+                if (min.child != null) {
+                    mergeChildrenIntoRootList(min);
+                }
+                removeNodeFromRootList(min);
+                if (min == min.right) {
+                    min = null;
+                } else {
+                    min = min.right;
+                    consolidate();
+                }
+                size--;
+            }
+            return oldMin.key;
+        }
+
     }
 
     /**

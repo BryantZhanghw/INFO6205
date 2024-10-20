@@ -31,6 +31,8 @@ import static edu.neu.coe.info6205.util.Utilities.formatWhole;
  */
 public class Benchmark_Timer<T> implements Benchmark<T> {
 
+
+
     /**
      * Calculate the appropriate number of warmup runs.
      *
@@ -107,6 +109,8 @@ public class Benchmark_Timer<T> implements Benchmark<T> {
         this(description, null, fRun, fPost);
     }
 
+
+
     /**
      * Constructor for a Benchmark_Timer where only the (timed) run function is specified.
      *
@@ -125,3 +129,4 @@ public class Benchmark_Timer<T> implements Benchmark<T> {
 
     final static LazyLogger logger = new LazyLogger(Benchmark_Timer.class);
 }
+
