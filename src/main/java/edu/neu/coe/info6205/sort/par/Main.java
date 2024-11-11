@@ -24,6 +24,7 @@ public class Main {
         ArrayList<Long> timeList = new ArrayList<>();
         for (int j = 50; j < 100; j++) {
             ParSort.cutoff = 10000 * (j + 1);
+            ParSort.maxDepth = configuration.getOrDefault("D", 4); // 设置递归深度
             // for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
             long time;
             long startTime = System.currentTimeMillis();
@@ -76,6 +77,10 @@ public class Main {
             // TODO sort this out
             if (x.equalsIgnoreCase("P")) //noinspection ResultOfMethodCallIgnored
                 ForkJoinPool.getCommonPoolParallelism();
+
+        if (x.equalsIgnoreCase("N")) setConfig(x, Integer.parseInt(y));
+        else if (x.equalsIgnoreCase("D")) setConfig(x, Integer.parseInt(y)); // 添加深度参数
+        else if (x.equalsIgnoreCase("P")) ForkJoinPool.getCommonPoolParallelism();
     }
 
     private static void setConfig(String x, int i) {
