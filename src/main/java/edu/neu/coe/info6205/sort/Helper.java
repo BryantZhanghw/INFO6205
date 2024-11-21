@@ -525,6 +525,11 @@ public interface Helper<X> extends AutoCloseable, Comparator<X>, Instrument {
         return findInversion(xs, 0, xs.length);
     }
 
+    //
+    default int size() {
+        return getN(); // 默认返回已存在的 `getN()` 方法值
+    }
+
     /**
      * Return true if xs is sorted, i.e., has no inversions.
      *
@@ -652,6 +657,5 @@ public interface Helper<X> extends AutoCloseable, Comparator<X>, Instrument {
     default Helper<X> clone(String description) {
         return clone(description, getN());
     }
-
 
 }

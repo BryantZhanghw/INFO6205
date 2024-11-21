@@ -13,33 +13,41 @@ public class HeapSort<X extends Comparable<X>> extends SortWithComparableHelper<
         if (array == null || array.length <= 1) return;
 
         // XXX construction phase
-        buildMaxHeap(array);
+        buildMaxHeap(array, from, to);
 
         // XXX sort-down phase
         Helper<X> helper = getHelper();
-        // TODO we over-count hits in the swap operation -- fix it.
-        for (int i = array.length - 1; i >= 1; i--) {
-            helper.swap(array, 0, i);
-            maxHeap(array, i, 0);
+        for (int i = to - 1; i > from; i--) {
+            helper.swap(array, from, i); // Move the root of the heap to the end
+            maxHeap(array, from, i, from); // Rebuild the heap with the reduced size
         }
     }
 
-    private void buildMaxHeap(X[] array) {
-        int half = array.length / 2;
-        for (int i = half; i >= 0; i--) maxHeap(array, array.length, i);
+    private void buildMaxHeap(X[] array, int from, int to) {
+        int half = (to + from) / 2;
+        for (int i = half - 1; i >= from; i--) {
+            maxHeap(array, from, to, i);
+        }
     }
 
-    private void maxHeap(X[] array, int heapSize, int index) {
-        // TODO we over-count hits in the swap operation -- fix it.
+    private void maxHeap(X[] array, int from, int heapSize, int index) {
         Helper<X> helper = getHelper();
-        final int left = index * 2 + 1;
-        final int right = index * 2 + 2;
+        final int left = from + (index - from) * 2 + 1; // Calculate left child index
+        final int right = from + (index - from) * 2 + 2; // Calculate right child index
         int largest = index;
-        if (left < heapSize && helper.compare(array, largest, left) < 0) largest = left;
-        if (right < heapSize && helper.compare(array, largest, right) < 0) largest = right;
-        if (index != largest) {
+
+        // Compare with left child
+        if (left < heapSize && helper.compare(array, largest, left) < 0) {
+            largest = left;
+        }
+        // Compare with right child
+        if (right < heapSize && helper.compare(array, largest, right) < 0) {
+            largest = right;
+        }
+        // If the largest is not the current node, swap and continue heapifying
+        if (largest != index) {
             helper.swap(array, index, largest);
-            maxHeap(array, heapSize, largest);
+            maxHeap(array, from, heapSize, largest);
         }
     }
 }

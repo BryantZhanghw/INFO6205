@@ -67,4 +67,30 @@ public class StatPack {
     public boolean isInvalid() {
         return n <= 0;
     }
+
+    private long compares = 0;
+
+    public long getCompares() {
+        return compares;
+    }
+
+    private long swaps = 0;
+    private long hits = 0;
+
+    public long getSwaps() {
+        return swaps;
+    }
+
+    public long getHits() {
+        return hits;
+    }
+
+    public void incrementSwaps(long value) {
+        swaps += value;
+    }
+
+    public void incrementHits(long value) {
+        hits += value;
+    }
+
 }

@@ -64,6 +64,7 @@ public class MergeSort<X extends Comparable<X>> extends SortWithComparableHelper
         sort(a, aux, from, to);
     }
 
+
     private void sort(X[] a, X[] aux, int from, int to) {
         Config config = helper.getConfig();
         boolean insurance = config.getBoolean(MERGESORT, INSURANCE);
@@ -74,8 +75,28 @@ public class MergeSort<X extends Comparable<X>> extends SortWithComparableHelper
         }
 
         // TO BE IMPLEMENTED  : implement merge sort with insurance and no-copy optimizations
-throw new RuntimeException("implementation missing");
+        if (to - from <= helper.cutoff()) {
+            insertionSort.sort(a, from, to); // 使用插入排序优化小规模数据
+            return;
+        }
+
+        int mid = from + (to - from) / 2; // 计算中点
+
+        // 递归排序左右两部分
+        sort(a, aux, from, mid);
+        sort(a, aux, mid, to);
+
+        // 如果已经有序，且保险模式启用，跳过合并
+        if (insurance && !helper.less(a[mid], a[mid - 1])) {
+            return; // 如果左半部分的最大值小于右半部分的最小值，已经有序
+        }
+
+        // 合并两部分
+        merge(a, aux, from, mid, to);
+        System.arraycopy(aux, from, a, from, to - from);
     }
+
+
 
     // CONSIDER combine with MergeSortBasic, perhaps.
     private void merge(X[] sorted, X[] result, int from, int mid, int to) {
@@ -100,6 +121,8 @@ throw new RuntimeException("implementation missing");
             }
         }
     }
+
+
 
     public static final String MERGESORT = "mergesort";
     public static final String NOCOPY = "nocopy";
@@ -141,5 +164,6 @@ throw new RuntimeException("implementation missing");
             throw new SortException("Array memory has not been set");
         return 1.0 * maxMemory / arrayMemory;
     }
+
 
 }

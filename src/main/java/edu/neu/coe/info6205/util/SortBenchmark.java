@@ -12,6 +12,7 @@ import edu.neu.coe.info6205.sort.linearithmic.TimSort;
 import edu.neu.coe.info6205.sort.linearithmic.*;
 
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.chrono.ChronoLocalDateTime;
@@ -39,6 +40,7 @@ import static edu.neu.coe.info6205.util.Utilities.formatWhole;
  */
 public class SortBenchmark {
     public static final String BENCHMARKSTRINGSORTERS = "benchmarkstringsorters";
+
 
     public static void main(String[] args) throws IOException {
         Config config = Config.load(SortBenchmark.class);
@@ -73,6 +75,7 @@ public class SortBenchmark {
     private void sortIntegers(Stream<Long> wordCounts) {
         wordCounts.forEach(this::runIntegerSorts);
     }
+
 
     private void runIntegerSorts(long N) {
         if (N > Integer.MAX_VALUE) throw new SortException("number of elements is too large");
@@ -179,6 +182,16 @@ public class SortBenchmark {
                 runStringSortBenchmark(words, nWords, nRunsLinearithmic * 3, sorter, timeLoggersLinearithmic);
             }
         }
+        //
+        if (isConfigBenchmarkStringSorter("heapsort")) {
+            Helper<String> helper = HelperFactory.create("Heapsort", nWords, config);
+            int nRuns = 2; // 每个规模运行 2次
+            runStringSortBenchmark(words, nWords, nRuns, new HeapSort<>(helper), timeLoggersLinearithmic);
+        }
+
+
+
+
 
         if (isConfigBenchmarkStringSorter("introsort") && nRunsLinearithmic > 0)
             try (SortWithHelper<String> sorter = new IntroSort<>(nWords, config)) {
@@ -284,6 +297,7 @@ public class SortBenchmark {
         } catch (Exception e) {
             logger.warn("Unable to run benchmark with N: " + N + "because:", e);
         }
+
     }
 
     /**
@@ -300,6 +314,8 @@ public class SortBenchmark {
         logger.info("****************************** String sort: " + nRuns + " runs of " + nWords + " " + sorter.getDescription() + " ******************************");
         new SorterBenchmark<>(String.class, preProcessor, sorter, words, nRuns, timeLoggers).run(getDescription(nWords, sorter), nWords);
         sorter.close();
+
+        exportResults("instrumented_results.csv", sorter.getHelper());
     }
 
     /**
@@ -492,4 +508,18 @@ public class SortBenchmark {
     public static final String BENCHMARKINTEGERSORTERS = "benchmarkintegersorters";
 
     private final Config config;
+
+    private static void exportResults(String filename, Helper<?> helper) {
+        try (FileWriter writer = new FileWriter(filename, true)) {
+            writer.append("Size,Compares,Swaps,Hits\n");
+            StatPack stats = helper.getStatPack();
+            writer.append(String.format("%d,%d,%d,%d\n",
+                    helper.size(),
+                    stats.getCompares(),
+                    stats.getSwaps(),
+                    stats.getHits()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -21,6 +21,7 @@ import static edu.neu.coe.info6205.util.Utilities.formatWhole;
 public class InstrumentedComparableHelper<X extends Comparable<X>> extends BaseComparableHelper<X> {
 
     final static LazyLogger logger = new LazyLogger(InstrumentedComparableHelper.class);
+    private int size;
 
     public boolean instrumented() {
         return true;
@@ -564,6 +565,11 @@ public class InstrumentedComparableHelper<X extends Comparable<X>> extends BaseC
     public Helper<X> clone(String description, int N) {
         return new InstrumentedComparableHelper<>(description, N, random, nRuns, instrumenter, config);
     }
+
+    public int size() {
+        return this.size; // 确保 `size` 在类中被初始化
+    }
+
 
     public String showFixes(X[] xs) {
         checkFixes(xs);
